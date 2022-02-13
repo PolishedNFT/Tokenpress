@@ -1,0 +1,11 @@
+{
+  "name": "tokenpress",
+  "version": "1.0.0",
+  "author": "PolishedNFT",
+  "license": "MIT",
+  "description": "ERC721 NFT Printing Press",
+  "main": "./src/main.js",
+  "scripts": {
+    "start": "node ./src/main.js"
+  }
+}
