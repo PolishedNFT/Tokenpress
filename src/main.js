@@ -9,9 +9,9 @@ const settings = {
 	price: 20000000000000000, // 0.020000000000000000 ether (18 places)
 };
 
-async function getManifest() {
+function getWordDir() {
 	if (process.argv.length !== 3) {
-		console.log('[?] Usage: npm run start -- ../path/to/input/');
+		console.log('[?] Usage: npm run start -- ../polished/work/dir/');
 		throw new Error('Invalid amount of arguments passed.');
 	}
 
@@ -19,7 +19,12 @@ async function getManifest() {
 	if (arg.length > 1 && arg[arg.length - 1] === '/') {
 		arg = arg.slice(0, arg.length - 1);
 	}
-	const content = await fs.promises.readFile(`${arg}/manifest.json`);
+
+	return arg;
+}
+
+async function getManifest(workDir) {
+	const content = await fs.promises.readFile(`${workDir}/manifest.json`);
 	return JSON.parse(content);
 }
 
@@ -29,7 +34,9 @@ async function main() {
 
 	const startTime = performance.now();
 
-	const manifest = await getManifest();
+	const workDir = getWordDir();
+
+	const manifest = await getManifest(workDir);
 
 	const replacements = {
 		...settings,
@@ -38,11 +45,24 @@ async function main() {
 		baseUri: manifest.baseUri,
 	};
 
-	const buildDir = path.resolve(__dirname, '../build');
+	if (!replacements.name || !replacements.symbol) {
+		throw new Error('[!] Invalid settings');
+	}
+
+	const buildDir = `${workDir}/contract/`;
 
 	if (!fs.existsSync(buildDir)) {
 		fs.mkdirSync(buildDir);
 	}
+
+	const { metadata, ...manifestRest} = manifest;
+	const newManifest = {
+		...manifestRest,
+		contract: settings,
+		metadata,
+	};
+
+	fs.writeFileSync(`${workDir}/manifest.json`, JSON.stringify(newManifest, null, 2));
 
 	const tmp = String(fs.readFileSync(path.resolve(__dirname, `../template/ERC721.sol`)));
 	const data = tmp.replace(/\$\{([^\}]+)\}/g, (matched, target) => replacements[target]);

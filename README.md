@@ -6,4 +6,4 @@
 
 _Must include valid ERC721 as your base template_
 
-`npm run start -- ../build/`
+`npm run start -- ../polished/work/dir/`
